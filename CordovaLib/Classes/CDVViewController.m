@@ -199,11 +199,27 @@
 
     NSURL* appURL = nil;
     NSString* loadErr = nil;
+    
+    NSURL *(^getAppUrl)(NSString *) = ^(NSString *stringUrl) {
+        if ([stringUrl hasPrefix:@"file://"]) {
+            stringUrl = [stringUrl substringFromIndex:@"file://".length];
+            NSUInteger queryStringLocation = [stringUrl rangeOfString:@"?"].location;
+            if (queryStringLocation != NSNotFound) {
+                NSString *queryString = [stringUrl substringFromIndex:queryStringLocation];
+                NSURL *fileUrl = [NSURL fileURLWithPath:[stringUrl substringToIndex:queryStringLocation]];
+                stringUrl = [fileUrl.absoluteString stringByAppendingString:queryString];
+            } else {
+                stringUrl = [[NSURL fileURLWithPath:stringUrl] absoluteString];
+            }
+        }
+        
+        return [NSURL URLWithString:stringUrl];
+    };
 
     if ([self.startPage rangeOfString:@"://"].location != NSNotFound) {
-        appURL = [NSURL URLWithString:self.startPage];
+        appURL = getAppUrl(self.startPage);
     } else if ([self.wwwFolderName rangeOfString:@"://"].location != NSNotFound) {
-        appURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@", self.wwwFolderName, self.startPage]];
+        appURL = getAppUrl([NSString stringWithFormat:@"%@/%@", self.wwwFolderName, self.startPage]);
     } else {
         // CB-3005 strip parameters from start page to check if page exists in resources
         NSURL* startURL = [NSURL URLWithString:self.startPage];

@@ -26,10 +26,11 @@
 @interface CDVStartPageTestViewController : UIViewController
 @property (strong, nonatomic) CDVViewController* vc1;
 @property (strong, nonatomic) CDVViewController* vc2;
+@property (strong, nonatomic) CDVViewController* vc3;
 @end
 
 @implementation CDVStartPageTestViewController
-@synthesize vc1 = _vc1, vc2 = _vc2;
+@synthesize vc1 = _vc1, vc2 = _vc2, vc3 = _vc3;
 
 - (void)loadView
 {
@@ -42,17 +43,24 @@
     _vc2.wwwFolderName = @"www";
     _vc2.startPage = @"index.html?delta=true";
     [self addChildViewController:_vc2];
+    
+    _vc3 = [[CDVViewController alloc] init];
+    _vc3.wwwFolderName = @"file://some/file/path";
+    _vc3.startPage = @"index.html";
+    [self addChildViewController:_vc3];
 
     CGRect applicationFrame = [[UIScreen mainScreen] applicationFrame];
     UIView* contentView = [[UIView alloc] initWithFrame:applicationFrame];
 
-    CGRect sub1, sub2;
-    CGRectDivide(applicationFrame, &sub1, &sub2, applicationFrame.size.height / 2, CGRectMinYEdge);
+    CGRect sub1, sub2, sub3;
+    CGRectDivide(applicationFrame, &sub1, &sub2, applicationFrame.size.height / 3, CGRectMinYEdge);
     [_vc1.view setBounds:sub1];
     [_vc2.view setBounds:sub2];
+    [_vc3.view setBounds:sub3];
 
     [contentView addSubview:_vc1.view];
     [contentView addSubview:_vc2.view];
+    [contentView addSubview:_vc3.view];
 
     self.view = contentView;
 }
@@ -90,6 +98,9 @@
 
     href = [rootVc.vc2.webView stringByEvaluatingJavaScriptFromString:geHREF];
     STAssertTrue([href hasSuffix:@"index.html?delta=true"], @"href should point to index.html?delta=true");
+    
+    href = [rootVc.vc3.webView stringByEvaluatingJavaScriptFromString:geHREF];
+    STAssertTrue([href hasPrefix:@"file://some/file/path"], @"href should point to file://some/file/path/index.html");
 }
 
 @end
