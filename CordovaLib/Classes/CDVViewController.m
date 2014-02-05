@@ -192,6 +192,16 @@
     self.pluginObjects = [[NSMutableDictionary alloc] initWithCapacity:20];
 }
 
+- (NSURL*)getAppURL:(NSString*)stringURL
+{
+    if ([stringURL hasPrefix:@"file://"]) {
+        stringURL = [stringURL substringFromIndex:@"file://".length];
+        return [NSURL fileURLWithPath:stringURL];
+    } else {
+        return [NSURL URLWithString:stringURL];
+    }
+}
+
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
 - (void)viewDidLoad
 {
@@ -201,9 +211,9 @@
     NSString* loadErr = nil;
 
     if ([self.startPage rangeOfString:@"://"].location != NSNotFound) {
-        appURL = [NSURL URLWithString:self.startPage];
+        appURL = [self getAppURL:self.startPage];
     } else if ([self.wwwFolderName rangeOfString:@"://"].location != NSNotFound) {
-        appURL = [NSURL URLWithString:[NSString stringWithFormat:@"%@/%@", self.wwwFolderName, self.startPage]];
+        appURL = [self getAppURL:[NSString stringWithFormat:@"%@/%@", self.wwwFolderName, self.startPage]];
     } else {
         // CB-3005 strip parameters from start page to check if page exists in resources
         NSURL* startURL = [NSURL URLWithString:self.startPage];
